@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket Chat</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f1f1f1;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chatbox {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            height: calc(100vh - 100px);
+            /* updated height */
+            width: calc(100vw - 100px);
+            /* updated width */
+            display: flex;
+            flex-direction: column;
+            
+            overflow: hidden;
+            
+        }
+
+        .header {
+            background-color: #202020;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+        }
+
+        .header h2 {
+            font-size: 1.5rem;
+        }
+
+        .chatlogs {
+            flex-grow: 1;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 20px;
+        }
+
+        .user-photo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .user-photo img {
+            border-radius: 50%;
+        }
+
+        .chat-message {
+            background-color: #f1f0f0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .self .chat-message {
+            background-color: #66b3ff;
+            color: #fff;
+        }
+
+        .chat-form {
+            display: flex;
+            flex-direction: row;
+            padding: 10px;
+        }
+
+        .chat-form textarea {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            resize: none;
+        }
+
+        .chat-form button {
+            background-color: #66b3ff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .senderName{
+            color: gray;
+            font-size: larger;
+            font-weight: bold;
+        }
+        .mainmsg{
+            margin-left: 2%;
+            color: rgb(100, 98, 98);
+            font-size: larger;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="chatbox">
+            <div class="header">
+                <h2>Chat App</h2>
+            </div>
+            <div class="chatlogs">
+
+            </div>
+            <div class="chat-form">
+                <textarea  id="ins" placeholder="Type a message..."></textarea>
+                <button  onclick="sendData()">Send</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var nickname=prompt("Name")
+        var socket = io();
+        var mass = document.getElementsByClassName("chatlogs").item(0);
+        var input = document.getElementById('ins');
+        alpha_msg = {
+            "name":nickname,
+            "massage":""
+        }
+        function on_recievedMassage_callback(msg) {
+            let indi_Box = document.createElement('div');
+            indi_Box.className = "chat friend chat-message";
+
+            let nicknameHolder = document.createElement("p")
+            nicknameHolder.className = "senderName"
+            nicknameHolder.textContent= msg["name"] + " :-"
+
+            let main_msg = document.createElement("p");
+            main_msg.className = "mainmsg"
+            main_msg.textContent = msg.massage;
+            
+            indi_Box.appendChild(nicknameHolder)
+            indi_Box.appendChild(main_msg);
+            mass.appendChild(indi_Box);
+
+        }
+
+        function on_someOneDisconnected(lg) {
+            let indi_Box = document.createElement('p');
+            indi_Box.textContent = lg;
+
+            mass.appendChild(indi_Box);
+        }
+        function chatSelf(msg) {
+            let indi_Box = document.createElement('div');
+            indi_Box.className = "chat self";
+
+            let main_msg = document.createElement("p");
+            main_msg.className = "chat-message";
+            main_msg.textContent = msg.massage;
+
+            indi_Box.appendChild(main_msg);
+            mass.appendChild(indi_Box);
+        }
+        function sendData() {
+            alpha_msg.massage = input.value
+            socket.emit('chax', alpha_msg)
+            chatSelf(alpha_msg);
+            input.value = '';
+        }
+        socket.on('sse', on_recievedMassage_callback)
+        socket.on('cur_state',on_someOneDisconnected)
+    </script>
+
+
+</body>
+
+</html>

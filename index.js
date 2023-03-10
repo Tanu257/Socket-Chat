@@ -1,0 +1,23 @@
+const express = require("express")
+const app = express()
+
+const http = require("http")
+const server = http.createServer(app)
+const {Server} = require('socket.io')
+const io = new Server(server)
+
+app.get('/',(req,res)=>{
+    res.sendFile(__dirname+'/index.html');
+});
+
+io.on('connection',(socket)=>{
+
+    socket.on('chax',(msg)=>{
+        socket.broadcast.emit('sse',msg)
+    })
+    socket.on('disconnect',()=>{
+        socket.broadcast.emit('cur_state',"A Disconnected")
+    })
+});
+server.listen(3000,()=>{
+});
